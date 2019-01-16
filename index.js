@@ -19,6 +19,7 @@
 
 const grid = [];
 const GRID_LENGTH = 3;
+let message = '';
 let turn = 'X';
 
 function initializeGrid() {
@@ -64,10 +65,90 @@ function getColumns() {
     return columnDivs;
 }
 
+function allSame(arr, value) {
+    var result = arr.reduce(function (total, num) {
+        return total && (num == value);
+    }, true);
+
+    return result;
+}
+
+function transpose(arr) {
+    return Object.keys(arr[0]).map(function(col) {
+        return arr.map(function(row) { return row[col]; });
+    });
+}
+
+function getFreeBoxes() {
+    var tempArray = [];
+    var boxes = document.getElementsByClassName("box");
+    for (var idx = 0; idx < boxes.length; idx++) {
+        var rowIdx = boxes[idx].getAttribute("rowIdx");
+        var colIdx = boxes[idx].getAttribute("colIdx");
+        if (grid[colIdx][rowIdx] == 0) {
+            tempArray.push(boxes[idx]);
+        }
+    }
+    return tempArray;
+}
+
+function renderMessage(msg) {
+    const mdiv = document.getElementById("message");
+    mdiv.innerHTML = '<p> '+msg+'</p>';
+}
+
 function renderMainGrid() {
     const parent = document.getElementById("grid");
     const columnDivs = getColumns();
     parent.innerHTML = '<div class="columnsStyle">' + columnDivs + '</div>';
+}
+
+function checkGameOver() {
+
+    function checkGrid(arr, value) {
+        return arr.reduce(function (result, row) {
+            return result || allSame(row, value);
+        }, false);
+    }
+
+    function checkDiagonals(arr, value) {
+        var darr1 = arr.map(function (row, index) {
+            return row[index];
+        });
+
+        var darr2 = arr.map(function (row, index) {
+            return row[GRID_LENGTH-index-1];
+        });
+
+        return (allSame(darr1, value) || allSame(darr2, value));
+    }
+
+    var playerWins = checkGrid(grid, 1) || checkGrid(transpose(grid), 1) || checkDiagonals(grid, 1);
+    var computerWins = checkGrid(grid, 2) || checkGrid(transpose(grid), 2) || checkDiagonals(grid, 2);
+    var freeBoxes = getFreeBoxes();
+
+    if (playerWins) {
+        return 'PLAYER WINS !';
+    } else if (computerWins) {
+        return 'COMPUTER WINS !';
+    } else if (freeBoxes.length == 0) {
+        return 'DRAW MATCH, GAME OVER !';
+    } else {
+        return false;
+    }
+}
+
+function computerGamePlay() {
+    var freeBoxes = getFreeBoxes();
+    if (freeBoxes.length) {
+        var randBox = freeBoxes[Math.floor(Math.random() * freeBoxes.length)];
+        var rowIdx = randBox.getAttribute("rowIdx");
+        var colIdx = randBox.getAttribute("colIdx");
+        let newValue = 2;
+        grid[colIdx][rowIdx] = newValue;
+        renderMainGrid();
+        addClickHandlers();
+    }
 }
 
 function onBoxClick() {
@@ -77,10 +158,24 @@ function onBoxClick() {
     grid[colIdx][rowIdx] = newValue;
     renderMainGrid();
     addClickHandlers();
+
+    var gameOver = checkGameOver();
+
+    if (!gameOver) {
+        computerGamePlay();
+        gameOver = checkGameOver();
+        if (gameOver) {
+            renderMainGrid();
+            renderMessage(gameOver);
+        }
+    } else {
+        renderMainGrid();
+        renderMessage(gameOver);
+    }
 }
 
 function addClickHandlers() {
-    var boxes = document.getElementsByClassName("box");
+    var boxes = getFreeBoxes();
     for (var idx = 0; idx < boxes.length; idx++) {
         boxes[idx].addEventListener('click', onBoxClick, false);
     }
