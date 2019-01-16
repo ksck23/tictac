@@ -5,15 +5,6 @@
 * 0 -> empty box
 * 1 -> box with X
 * 2 -> box with O
-*
-* Below are the tasks which needs to be completed:
-* Imagine you are playing with the computer so every alternate move should be done by the computer
-* X -> player
-* O -> Computer
-*
-* Winner needs to be decided and has to be flashed
-*
-* Extra points will be given for approaching the problem more creatively
 * 
 */
 
