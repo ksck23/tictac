@@ -1,2 +1,1 @@
 # tictac
-tic tac game
